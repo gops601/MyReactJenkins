@@ -1,52 +1,55 @@
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    IMAGE_NAME = 'react-vite-app'     // change if you want
-    TAG        = "${env.BUILD_NUMBER}"// auto-incremented build tag
-    CONTAINER  = 'react-app'
-    PORT_MAP   = '5177:5173'
-  }
+    environment {
+        IMAGE_NAME = "gops601/pipeline {
+    agent any
 
-  stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
+    environment {
+        IMAGE_NAME = "gops601/react-login-app"
+        TAG = "latest"
     }
 
-    stage('Docker Build') {
-      steps {
-        bat 'docker --version'
-        bat """
-          docker build -t %IMAGE_NAME%:%TAG% .
-        """
-      }
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${IMAGE_NAME}:${TAG}")
+                }
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    bat "docker stop flask-container || exit 0"
+                    bat "docker rm flask-container || exit 0"
+                    bat "docker run -d --name flask-container -p 5175:5173 ${IMAGE_NAME}:${TAG}"
+                }
+            }
+        }
+    }
+}"
+        TAG = "latest"
     }
 
-    stage('Stop Old Container (if any)') {
-      steps {
-        // Ignore errors if container doesn't exist
-        bat 'docker stop %CONTAINER% || exit 0'
-        bat 'docker rm %CONTAINER% || exit 0'
-      }
-    }
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${IMAGE_NAME}:${TAG}")
+                }
+            }
+        }
 
-    stage('Run New Container') {
-      steps {
-        bat """
-          docker run -d --name %CONTAINER% -p %PORT_MAP% %IMAGE_NAME%:%TAG%
-        """
-      }
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    bat "docker stop flask-container || exit 0"
+                    bat "docker rm flask-container || exit 0"
+                    bat "docker run -d --name flask-container -p 5175:5173 ${IMAGE_NAME}:${TAG}"
+                }
+            }
+        }
     }
-
-    
-  }
-
-  post {
-    always {
-      echo "Built %IMAGE_NAME%:%TAG% and (re)started container %CONTAINER% on port %PORT_MAP%"
-      bat 'docker ps -a'
-    }
-  }
 }
