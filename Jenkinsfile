@@ -7,21 +7,18 @@ pipeline {
     }
 
     stages {
+
         stage('Build Docker Image') {
             steps {
-                script {
-                    docker.build("${IMAGE_NAME}:${TAG}")
-                }
+                sh "docker build -t ${IMAGE_NAME}:${TAG} ."
             }
         }
 
         stage('Run Docker Container') {
             steps {
-                script {
-                    sh "docker stop react-container || true"
-                    sh "docker rm react-container || true"
-                    sh "docker run -d --name react-container -p 5175:5173 ${IMAGE_NAME}:${TAG}"
-                }
+                sh "docker stop react-container || true"
+                sh "docker rm react-container || true"
+                sh "docker run -d --name react-container -p 5175:5173 ${IMAGE_NAME}:${TAG}"
             }
         }
     }
